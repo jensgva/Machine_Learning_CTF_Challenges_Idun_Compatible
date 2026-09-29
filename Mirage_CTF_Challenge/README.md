@@ -14,7 +14,7 @@ Flag Format: Flag:{\<FLAG\>}
 
 ### Prerequisites
 - Docker installed on your system
-- **OpenAI API key (REQUIRED)**
+- **OpenAI-compatible API key (REQUIRED)**
 
 ### Quick Start
 
@@ -33,12 +33,12 @@ Flag Format: Flag:{\<FLAG\>}
    docker build -t mirage_ctf .
    ```
 
-3. **Run with your OpenAI API key (REQUIRED):**
+3. **Run with an OpenAI-compatible API key (REQUIRED):**
    ```bash
-   docker run --rm -p 5000:5000 -ti mirage_ctf --openaikey="YOUR_OPENAI_API_KEY"
+   docker run --rm -p 5000:5000 -e OPENAI_BASE_URL="https://llm.hpc.ntnu.no/v1" -e OPENAI_MODEL="openai/gpt-oss-120b" -ti mirage_ctf --openaikey="YOUR_IDUN_API_KEY"
    ```
 
-   **Note:** The container will not start without a valid OpenAI API key.
+   **Note:** The container will not start without a valid API key. Idun access requires the NTNU network or VPN.
 
 ### Access
 - **Web Interface**: http://localhost:5000

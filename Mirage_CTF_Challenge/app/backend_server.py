@@ -114,8 +114,11 @@ class LLMService:
         
         self.api_key = api_key
         
-        # Initialize OpenAI client with the API key
-        self.client = OpenAI(api_key=self.api_key)
+        client_options = {"api_key": self.api_key}
+        if os.environ.get("OPENAI_BASE_URL"):
+            client_options["base_url"] = os.environ["OPENAI_BASE_URL"]
+        self.client = OpenAI(**client_options)
+        self.model = os.environ.get("OPENAI_MODEL", "gpt-3.5-turbo")
         
         # System message for the LLM
         self.system_message = """You are a helpful assistant that can use tools when needed.
@@ -154,7 +157,7 @@ You can use these MCP tools if needed for your response. If you decide to use an
         try:
             # Call OpenAI API using the new syntax
             completion = self.client.chat.completions.create(
-                model="gpt-3.5-turbo",
+                model=self.model,
                 messages=[
                     {"role": "system", "content": self.system_message},
                     {"role": "user", "content": f"Explain the code: {enhanced_content}"}

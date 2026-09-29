@@ -167,7 +167,14 @@ if __name__ == '__main__':
     openaiapikey = args.openaikey
     openai.api_key = openaiapikey
     if openaiapikey is not None:
-        llm = OpenAI(temperature=0.1, model="gpt-3.5-turbo")
+        llm_options = {
+            "temperature": 0.1,
+            "model": os.environ.get("OPENAI_MODEL", "gpt-3.5-turbo"),
+            "api_key": openaiapikey,
+        }
+        if os.environ.get("OPENAI_BASE_URL"):
+            llm_options["api_base"] = os.environ["OPENAI_BASE_URL"]
+        llm = OpenAI(**llm_options)
         
         engine, metadata_obj = create_database()
         create_table(engine, metadata_obj)

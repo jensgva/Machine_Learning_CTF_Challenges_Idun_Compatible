@@ -31,7 +31,7 @@ Flag:{...}
 ### Prerequisites
 
 - Docker
-- An OpenAI API key
+- An OpenAI-compatible API key
 
 ### 1. Build the Docker Image
 
@@ -44,8 +44,12 @@ docker build -t rogue_ctf .
 
 ```bash
 export OPENAI_API_KEY="sk-proj-..."
+export OPENAI_BASE_URL="https://llm.hpc.ntnu.no/v1"
+export OPENAI_MODEL="openai/gpt-oss-120b"
 
 docker run --rm -p 5000:5000 -p 5001:5001 \
+  -e OPENAI_BASE_URL="$OPENAI_BASE_URL" \
+  -e OPENAI_MODEL="$OPENAI_MODEL" \
   -v "$(pwd)/marketplace/agents:/app/marketplace/agents" \
   -ti rogue_ctf --openaikey="$OPENAI_API_KEY"
 ```

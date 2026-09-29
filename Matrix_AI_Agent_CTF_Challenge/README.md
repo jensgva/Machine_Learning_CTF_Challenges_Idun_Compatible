@@ -54,8 +54,11 @@ protocol can be exploited.
 # Build the Matrix
 docker build -t matrix-ctf .
 
-# Enter the Matrix (with OpenAI — Smith talks back intelligently)
-docker run -d --name the_matrix -p 9999:9999 -p 7001:7001 matrix-ctf --openaikey="sk-your-key"
+# Enter the Matrix with Idun or another OpenAI-compatible provider
+docker run -d --name the_matrix -p 9999:9999 -p 7001:7001 `
+	-e OPENAI_BASE_URL="https://llm.hpc.ntnu.no/v1" `
+	-e OPENAI_MODEL="openai/gpt-oss-120b" `
+	matrix-ctf --openaikey="your-api-key"
 
 # Enter the Matrix (without OpenAI — Smith uses fallback responses, CTF still works)
 docker run -d --name the_matrix -p 9999:9999 -p 7001:7001 matrix-ctf

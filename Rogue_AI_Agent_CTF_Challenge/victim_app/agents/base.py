@@ -13,8 +13,14 @@ load_dotenv()
 
 def get_llm(temperature: float = 0) -> ChatOpenAI:
     """Return a ChatOpenAI instance for gpt-4o-mini."""
+    client_options = {
+        "model": os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
+        "openai_api_key": os.getenv("OPENAI_API_KEY"),
+        "temperature": temperature,
+        "max_tokens": 2048,
+    }
+    if os.getenv("OPENAI_BASE_URL"):
+        client_options["base_url"] = os.environ["OPENAI_BASE_URL"]
     return ChatOpenAI(
-        model="gpt-4o-mini",
-        temperature=temperature,
-        max_tokens=2048,
+        **client_options,
     )

@@ -7,8 +7,14 @@ class MatrixLLM:
 
     def __init__(self):
         api_key = os.environ.get("OPENAI_API_KEY")
+        base_url = os.environ.get("OPENAI_BASE_URL")
+        model = os.environ.get("OPENAI_MODEL", "gpt-4o-mini")
         if api_key:
-            self.client = OpenAI(api_key=api_key)
+            client_options = {"api_key": api_key}
+            if base_url:
+                client_options["base_url"] = base_url
+            self.client = OpenAI(**client_options)
+            self.model = model
             self.use_llm = True
         else:
             self.client = None
@@ -31,7 +37,7 @@ class MatrixLLM:
             )
 
         response = self.client.chat.completions.create(
-            model="gpt-4o-mini",
+            model=self.model,
             messages=[
                 {"role": "system", "content": self.system_prompt},
                 {"role": "user", "content": user_message},

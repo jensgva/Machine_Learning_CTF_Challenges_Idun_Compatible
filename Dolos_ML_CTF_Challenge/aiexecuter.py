@@ -1,4 +1,5 @@
 import argparse
+import os
 from langchain_experimental.pal_chain import PALChain
 from langchain import OpenAI
 
@@ -9,7 +10,14 @@ parser.add_argument('--api_key', type=str, help='openai api key')
 # Parse the command line arguments
 args = parser.parse_args()
 openaiapikey = args.api_key
-llm = OpenAI(temperature=0, openai_api_key=openaiapikey)
+llm_options = {
+    "temperature": 0,
+    "openai_api_key": openaiapikey,
+    "model_name": os.environ.get("OPENAI_MODEL", "gpt-3.5-turbo-instruct"),
+}
+if os.environ.get("OPENAI_BASE_URL"):
+    llm_options["openai_api_base"] = os.environ["OPENAI_BASE_URL"]
+llm = OpenAI(**llm_options)
 pal_chain = PALChain.from_math_prompt(llm, verbose=True)
 
 # Check if the 'user_input' flag is provided

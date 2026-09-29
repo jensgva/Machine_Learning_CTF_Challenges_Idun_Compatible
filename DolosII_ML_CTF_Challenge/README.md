@@ -10,7 +10,7 @@ In this web application challenge, the :detective: security researcher needs to 
 
 For hosting this challege, openai API key is required.
 
-1. Openai: Sign into [Openai Platform](https://platform.openai.com/playground), access API Keys section and create keys. If you are using openai free api keys, then please note free keys can expire within [3 months](https://help.openai.com/en/articles/4936830-what-happens-after-i-use-my-free-tokens-or-the-3-months-is-up-in-the-free-trial). 
+1. OpenAI-compatible API: use an OpenAI API key or an Idun API key. For Idun, use `https://llm.hpc.ntnu.no/v1` as the base URL and choose a chat model such as `openai/gpt-oss-120b`.
 
 :hand: :exclamation: :exclamation: ***Step 2 can be either building the docker image of application (Step2a) OR setting up the application in local machine (Step2b).*** :no_entry_sign:
 
@@ -20,7 +20,7 @@ For hosting this challege, openai API key is required.
 
 `docker build -t dolosll_ml_ctf .`
 
-To run the challenge `docker run --rm -p 5000:5000 -ti dolosll_ml_ctf  --openaikey="<OPENAI_API_KEY>"`
+To run with Idun: `docker run --rm -p 5000:5000 -e OPENAI_BASE_URL="https://llm.hpc.ntnu.no/v1" -e OPENAI_MODEL="openai/gpt-oss-120b" -ti dolosll_ml_ctf --openaikey="<IDUN_API_KEY>"`
 
 ### OR
 
@@ -38,7 +38,7 @@ Activate the virtual enviornemnt `source /virtualspace/bin/activate`
 
 `pip install -r .\requirements.txt` 
 
-`python3 app.py --openaikey="<OPENAI_API_KEY>"`
+`OPENAI_BASE_URL=https://llm.hpc.ntnu.no/v1 OPENAI_MODEL=openai/gpt-oss-120b python3 app.py --openaikey="<IDUN_API_KEY>"`
 
 Now the web application (Interactive Chat App) can be accessed in host systems browser at http://127.0.0.1:5000/
 
