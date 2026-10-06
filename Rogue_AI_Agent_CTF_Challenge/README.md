@@ -35,35 +35,60 @@ Flag:{...}
 
 ### 1. Build the Docker Image
 
-```bash
-cd Machine_Learning_CTF_Challenges/Rogue_AI_Agent_CTF_Challenge/
-docker build -t rogue_ctf .
+Docker Desktop must be running. The commands below are for Windows PowerShell:
+
+```powershell
+cd "C:\path\to\Machine_Learning_CTF_Challenges_Idun_Compatible\Rogue_AI_Agent_CTF_Challenge"
+docker build --no-cache -t rogue_ctf .
 ```
 
-### 2. Launch the CTF
+`--no-cache` ensures that the compatible `a2a-sdk` version from
+`requirements.txt` is installed instead of an older cached dependency.
 
-```bash
-export OPENAI_API_KEY="sk-proj-..."
-export OPENAI_BASE_URL="https://llm.hpc.ntnu.no/v1"
-export OPENAI_MODEL="openai/gpt-oss-120b"
+### 2. Set the LLM configuration
 
-docker run --rm -p 5000:5000 -p 5001:5001 \
-  -e OPENAI_BASE_URL="$OPENAI_BASE_URL" \
-  -e OPENAI_MODEL="$OPENAI_MODEL" \
-  -v "$(pwd)/marketplace/agents:/app/marketplace/agents" \
-  -ti rogue_ctf --openaikey="$OPENAI_API_KEY"
+Replace the API key with your OpenAI-compatible API key:
+
+```powershell
+$env:OPENAI_API_KEY = "sk-proj-..."
+$env:OPENAI_BASE_URL = "https://llm.hpc.ntnu.no/v1"
+$env:OPENAI_MODEL = "openai/gpt-oss-120b"
 ```
+
+The key must be set in the same PowerShell window used to start Docker.
+
+### 3. Launch the CTF
+
+The container uses port `5000` internally. The command below makes the Victim
+App available at `http://localhost:5004` and the Marketplace at
+`http://localhost:5001`:
+
+```powershell
+docker run --rm `
+  -p 5004:5000 `
+  -p 5001:5001 `
+  -e OPENAI_BASE_URL="$env:OPENAI_BASE_URL" `
+  -e OPENAI_MODEL="$env:OPENAI_MODEL" `
+  -e OPENAI_API_KEY="$env:OPENAI_API_KEY" `
+  -v "${PWD}\marketplace\agents:/app/marketplace/agents" `
+  -ti rogue_ctf `
+  --openaikey="$env:OPENAI_API_KEY"
+```
+
+The `--openaikey` argument is required by `run_ctf.py`, while
+`OPENAI_API_KEY` is also passed as an environment variable for the agents.
+Keep this terminal open while using the challenge. Press `Ctrl+C` to stop it.
 
 Wait for the `READY` status on each service, then open:
 
-- **Victim App** (read-only): [http://localhost:5000](http://localhost:5000) — simulates the end user
+- **Victim App** (read-only): [http://localhost:5004](http://localhost:5004) — simulates the end user
 - **Marketplace** (your workspace): [http://localhost:5001](http://localhost:5001) — view and monitor your agent
 
 ![Banner](Images/banner.png)
 
 ---
 
-### 3. Verify Everything is Running
+### 4. Verify Everything is Running
 
 - The Marketplace UI should show the Research Assistant status as **Online**
 - Clicking **"Simulate User Action"** on the Victim UI should produce a normal research request with no flag

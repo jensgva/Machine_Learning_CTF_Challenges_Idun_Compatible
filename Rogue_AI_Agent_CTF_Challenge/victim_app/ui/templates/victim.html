@@ -253,7 +253,21 @@
 
             try {
                 const res = await fetch('/simulate', { method: 'POST' });
-                const data = await res.json();
+                const contentType = res.headers.get('content-type') || '';
+                let data;
+
+                if (contentType.includes('application/json')) {
+                    data = await res.json();
+                } else {
+                    const body = await res.text();
+                    throw new Error(
+                        `Server returned HTTP ${res.status}: ${body || 'empty response'}`
+                    );
+                }
+
+                if (!res.ok || data.status === 'error') {
+                    throw new Error(data.response || `Server returned HTTP ${res.status}`);
+                }
 
                 // Display response
                 responseArea.textContent = data.response || 'No response received.';
