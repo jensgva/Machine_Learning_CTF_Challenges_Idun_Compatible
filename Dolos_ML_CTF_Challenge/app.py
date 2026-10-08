@@ -1,8 +1,8 @@
 from flask import Flask, render_template, redirect, url_for, request, jsonify
-from rebuff import Rebuff
 import subprocess
 import re
 import argparse
+import sys
 
 app = Flask(__name__)
 
@@ -27,6 +27,39 @@ Press Ctrl+C to quit
 print(__header__)
 
 user_input = None
+
+class _InjectionDetectionResult:
+    def __init__(self, injection_detected):
+        self.injectionDetected = injection_detected
+
+class LocalRebuff:
+    """Built-in stand-in for the hosted Rebuff prompt-injection detector
+    (playground.rebuff.ai has been discontinued, so no Rebuff API key is
+    needed). Flags obvious injection attempts with simple heuristics so the
+    challenge flow stays the same as with the original service."""
+
+    INJECTION_PATTERNS = [
+        r"ignore\s+(all\s+)?(previous|prior|above)",
+        r"disregard",
+        r"system\s+prompt",
+        r"jailbreak",
+        r"you\s+are\s+now",
+        r"__import__",
+        r"\bsubprocess\b|\bos\.(system|popen)\b",
+        r"\b(eval|exec|execfile|import)\b",
+        r"open\s*\(",
+        r"flag",
+        r"\.txt\b",
+        r"\bfile\b",
+        r"\b(ls|cat|rm|sudo)\b",
+    ]
+
+    def detect_injection(self, user_input):
+        detected = any(
+            re.search(pattern, user_input, re.IGNORECASE)
+            for pattern in self.INJECTION_PATTERNS
+        )
+        return _InjectionDetectionResult(detected)
 
 def remove_ansi_escape_codes(input_text):
     # Pattern to match ANSI escape codes
@@ -58,7 +91,7 @@ def chat():
     elif request.form.get('value'):
         value = request.form.get('value')
         try:
-            command = f"python3 aiexecuter.py --user_input=\"{user_input}\" --api_key=\"{openaiapikey}\""
+            command = f'"{sys.executable}" aiexecuter.py --user_input="{user_input}" --api_key="{openaiapikey}"'
             # Run the subprocess
             rawresult = subprocess.run(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
             cleaned_result = remove_ansi_escape_codes(rawresult.stdout)
@@ -74,14 +107,12 @@ def chat():
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Flask application")
-    parser.add_argument('--rebuffkey', type=str, help='Redbuff API Key')
-    parser.add_argument('--openaikey', type=str, help='Openai API Key')
+    parser.add_argument('--openaikey', type=str, help='OpenAI/Idun API Key')
     args = parser.parse_args()
-    REBUFF_API_KEY = args.rebuffkey
     openaiapikey = args.openaikey
-    if REBUFF_API_KEY is not None and openaiapikey is not None:
-        rb = Rebuff(api_token=REBUFF_API_KEY, api_url="https://playground.rebuff.ai")
+    if openaiapikey is not None:
+        rb = LocalRebuff()
         app.run(host="0.0.0.0", port=5000)
         app.run(debug=True)
     else:
-        print("Please provide API Keys to proceed")
+        print("Please provide API Key to proceed")

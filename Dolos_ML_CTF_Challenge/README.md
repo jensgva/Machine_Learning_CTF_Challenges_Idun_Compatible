@@ -6,41 +6,67 @@ In this web application challenge, the :detective: security researcher needs to 
 
 #### Setup :hammer_and_wrench: 
 
-##### :point_right: Step 1 - Getting API Keys
+##### :point_right: Step 1 - Getting an API Key
 
-For hosting this challege, 2 API Keys are required.
+Only **one** API key is required: an OpenAI-compatible **chat** API key.
 
-1. ReBuff: Head to [Rebuff Playground](https://playground.rebuff.ai/), Sign in with Google Account and scroll down to view the API Key. 
+1. **Idun (NTNU LLM HPC service)**: connect to the NTNU VPN, get your Idun API key (`sk-...`) and use `https://llm.hpc.ntnu.no/v1` as the base URL with one of the available chat models, e.g. `Inferact/GLM-5.3-NVFP4` (others: `Qwen/Qwen3.8-27B-FP8`, `moonshotai/Kimi-K2.6` — which models your key may use can vary; `Inferact/GLM-5.3-NVFP4` was verified working end to end).
+2. **OpenAI**: a regular OpenAI API key also works (no extra configuration needed).
 
-2. OpenAI-compatible API: use an OpenAI API key or an Idun API key. For Idun, use `https://llm.hpc.ntnu.no/v1` as the base URL and choose a chat model such as `openai/gpt-oss-120b`.
+> :information_source: The original challenge also required a Rebuff API key. The hosted Rebuff service (playground.rebuff.ai) has been discontinued, so the app now ships with a small built-in local injection detector instead — no second key needed.
+
+> :information_source: The original challenge ran on an unaligned OpenAI completion model. The modern chat models available today (GLM, Qwen, ...) are safety-aligned and do not follow every instruction in a prompt every single time — if a reply seems to skip part of your message, just send it again (in testing the models followed such instructions roughly every second to fourth attempt).
 
 :hand: :exclamation: :exclamation: ***Step 2 can be either building the docker image of application (Step2a) OR setting up the application in local machine (Step2b).*** :no_entry_sign:
 
 ##### :point_right: Step 2a - Building Docker Image of the Application To Host The Challenge
 
-`cd Machine_Learning_CTF_Challenges/Dolos_ML_CTF_Challenge/`
+Docker Desktop must be running. The commands below are for Windows PowerShell (on Linux/macOS, put the flags on one line without the backticks):
 
-`docker build -t dolos_ml_ctf .`
+```powershell
+cd path\to\Machine_Learning_CTF_Challenges_Idun_Compatible\Dolos_ML_CTF_Challenge\
+docker build -t dolos_ml_ctf .
+```
 
-To run with Idun: `docker run --rm -p 5000:5000 -e OPENAI_BASE_URL="https://llm.hpc.ntnu.no/v1" -e OPENAI_MODEL="openai/gpt-oss-120b" -ti dolos_ml_ctf --rebuffkey="<REBUFF_API_KEY>" --openaikey="<IDUN_API_KEY>"`
+To run with Idun:
+
+```powershell
+docker run --rm -p 5000:5000 `
+  -e OPENAI_BASE_URL="https://llm.hpc.ntnu.no/v1" `
+  -e OPENAI_MODEL="Inferact/GLM-5.3-NVFP4" `
+  -ti dolos_ml_ctf --openaikey="<IDUN_API_KEY>"
+```
 
 ### OR
 
 ##### :point_right: Step 2b - Setting Up Python Flask App To Host The Challenge
 
-The challenge works best in `Ubuntu` systems with `Python 3.8.10`
+The challenge relies on a legacy ML stack (`langchain` 0.0.x / `openai` 0.28 / `langchain-experimental` 0.0.14), which needs **Python 3.10–3.12**. Python 3.13+ will fail to install the dependencies. (On Windows, install a compatible Python first if needed: `winget install -e --id Python.Python.3.12`)
 
-Create virtual enviornment in python using `python -m venv virtualspace`
+From a fresh PC, clone and set up the app:
 
-Activate the virtual enviornemnt `source /virtualspace/bin/activate`
+```powershell
+git clone https://github.com/jensgva/Machine_Learning_CTF_Challenges_Idun_Compatible.git
+cd Machine_Learning_CTF_Challenges_Idun_Compatible\Dolos_ML_CTF_Challenge
+python -m venv virtualspace
+.\virtualspace\Scripts\Activate.ps1
+pip install -r .\requirements.txt
+```
 
-`git clone https://github.com/alexdevassy/Machine_Learning_CTF_Challenges.git`
+Run with Idun (PowerShell):
 
-`cd Machine_Learning_CTF_Challenges/Dolos_ML_CTF_Challenge/`
+```powershell
+$env:OPENAI_BASE_URL = "https://llm.hpc.ntnu.no/v1"
+$env:OPENAI_MODEL = "Inferact/GLM-5.3-NVFP4"
+python app.py --openaikey="<IDUN_API_KEY>"
+```
 
-`pip install -r .\requirements.txt` 
+or on Linux/macOS:
 
-`OPENAI_BASE_URL=https://llm.hpc.ntnu.no/v1 OPENAI_MODEL=openai/gpt-oss-120b python3 app.py --rebuffkey="<REBUFF_API_KEY>" --openaikey="<IDUN_API_KEY>"`
+```bash
+source virtualspace/bin/activate
+OPENAI_BASE_URL=https://llm.hpc.ntnu.no/v1 OPENAI_MODEL=Inferact/GLM-5.3-NVFP4 python3 app.py --openaikey="<IDUN_API_KEY>"
+```
 
 Now the web application (Interactive Chat App) can be accessed in host systems browser at http://127.0.0.1:5000/
 
@@ -55,4 +81,3 @@ For solution to CTF challenge visit : [Dolos_CTF_Solution](Solution/)
 
 
 https://github.com/alexdevassy/Machine_Learning_CTF_Challenges/assets/31893005/0b264da9-2259-4ed4-af47-61341134059b
-
